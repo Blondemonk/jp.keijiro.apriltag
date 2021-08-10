@@ -20,10 +20,13 @@ sealed class WebcamTest : MonoBehaviour
     AprilTag.TagDetector _detector;
     TagDrawer _drawer;
 
+    // 3d world logic
+    [SerializeField] GameObject tagCube = default;
+
     void Start()
     {
         // Webcam initialization
-        _webcamRaw = new WebCamTexture(_resolution.x, _resolution.y, 60);
+        _webcamRaw = new WebCamTexture(_resolution.x, _resolution.y, 120);
         _webcamBuffer = new RenderTexture(_resolution.x, _resolution.y, 0);
         _readBuffer = new Color32 [_resolution.x * _resolution.y];
 
@@ -62,8 +65,19 @@ sealed class WebcamTest : MonoBehaviour
         _detector.ProcessImage(_readBuffer, fov, _tagSize);
 
         // Detected tag visualization
+        bool cubeUpdated = false;
         foreach (var tag in _detector.DetectedTags)
+        {
             _drawer.Draw(tag.ID, tag.Position, tag.Rotation, _tagSize);
+            Debug.LogFormat("Pos: {0}, Rot: {1}", tag.Position, tag.Rotation);
+            if (!cubeUpdated)
+            {
+                tagCube.transform.position = tag.Position;
+                tagCube.transform.rotation = tag.Rotation;
+                cubeUpdated = true;
+            }
+        }
+
 
         // Profile data output (with 30 frame interval)
         if (Time.frameCount % 30 == 0)
